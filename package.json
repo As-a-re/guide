@@ -1,0 +1,36 @@
+{
+  "name": "electron",
+  "version": "1.0.0",
+  "main": "main.js",
+  "type":"module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "dev": "electronmon .",
+    "build": "electron-builder build --win --publish never"
+  },
+  "author": "",
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+
+    "electron-is-dev": "^3.0.1",
+    "electronmon": "^2.0.3"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.your.app",
+    "productName": "Believers-Guide",
+    "files": [
+      "build/**/*",
+      "main.js",
+      "assets/**/*",
+      "config.json"
+    ],
+    "win": {
+      "target": "nsis"
+    }
+}
+}
