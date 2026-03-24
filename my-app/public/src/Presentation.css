@@ -1,0 +1,397 @@
+/* ========================================
+   PRESENTATION PAGE STYLES
+   ======================================== */
+
+/* Main presentation container - covers entire viewport */
+.presentation-page {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #0b1220 0%, #1a2332 100%);
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+/* Loading State */
+.presentation-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #0b1220 0%, #1a2332 100%);
+  color: #e2e8f0;
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+/* Presentation Header - Control Bar */
+.presentation-header {
+  background: #1a2332;
+  border-bottom: 2px solid #2d3a52;
+  padding: 1.25rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  min-height: 72px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.presentation-title-section {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.presentation-title-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.presentation-title-info h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.presentation-type-badge {
+  font-size: 0.75rem;
+  padding: 0.375rem 0.875rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-radius: 16px;
+  text-transform: capitalize;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Exit Button */
+.exit-button {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exit-button:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  transform: translateX(-4px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Presentation Controls */
+.presentation-controls {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.font-size-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding-left: 2rem;
+  border-left: 2px solid #2d3a52;
+}
+
+.font-size-controls .control-label {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.font-size-controls .control-btn {
+  padding: 0.625rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  border: 1px solid #2d3a52;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.font-size-controls .control-btn:hover {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border-color: #3b82f6;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.font-size-display {
+  font-size: 0.9375rem;
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  color: #e2e8f0;
+  min-width: 52px;
+  text-align: center;
+  padding: 0.5rem 0.75rem;
+  background: #0f172a;
+  border: 1px solid #2d3a52;
+  border-radius: 6px;
+}
+
+/* Presentation Content Area */
+.presentation-content {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  display: flex;
+  align-items: flex-start; /* Changed from center */
+  justify-content: center;
+  padding: 3rem;
+}
+
+/* Content Inner - column layout, top-aligned, horizontally centered */
+.presentation-content-inner {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 3rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center horizontally */
+  justify-content: flex-start; /* Align to top */
+}
+
+/* Language Toggle Section */
+.language-toggle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin: 2rem auto 0 auto;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.language-btn {
+  background: #1a2332;
+  color: white;
+  border: 2px solid #fff;
+  border-radius: 6px;
+  padding: 6px 18px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px #0002;
+  transition: background 0.2s, color 0.2s;
+  text-transform: capitalize;
+}
+
+.language-btn.active {
+  background-color: #3b82f6;
+}
+.language-btn.active:nth-child(2) {
+  background-color: #10b981;
+}
+.language-btn.active:nth-child(3) {
+  background-color: #f59e42;
+}
+
+.presentation-content-inner {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 3rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-height: 400px;
+}
+
+.presentation-text {
+  width: 100%;
+}
+
+.presentation-text h1,
+.presentation-text h2,
+.presentation-text h3,
+.presentation-text h4,
+.presentation-text h5,
+.presentation-text h6 {
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.presentation-text h1 {
+  font-size: 2.5em;
+}
+
+.presentation-text h2 {
+  font-size: 2em;
+}
+
+.presentation-text h3 {
+  font-size: 1.75em;
+}
+
+.presentation-text p {
+  margin-bottom: 1rem;
+}
+
+.presentation-text ul,
+.presentation-text ol {
+  margin-left: 2rem;
+  margin-bottom: 1rem;
+}
+
+.presentation-text li {
+  margin-bottom: 0.5rem;
+}
+
+.presentation-text strong {
+  font-weight: 700;
+}
+
+.presentation-text em {
+  font-style: italic;
+}
+
+.presentation-text code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: "Courier New", monospace;
+}
+
+.presentation-text pre {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.presentation-text blockquote {
+  border-left: 4px solid #3b82f6;
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-bottom: 1rem;
+  font-style: italic;
+  opacity: 0.9;
+}
+
+/* Presentation Footer */
+.presentation-footer {
+  background: #1a2332;
+  border-top: 2px solid #2d3a52;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8125rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.presentation-footer span:last-child {
+  color: #64748b;
+}
+
+/* Scrollbar for presentation content */
+.presentation-content::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.presentation-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.presentation-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 5px;
+}
+
+.presentation-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Responsive Presentation Styles */
+@media (max-width: 1024px) {
+  .presentation-content {
+    padding: 2rem;
+  }
+
+  .presentation-content-inner {
+    padding: 2rem;
+  }
+
+  .presentation-text h1 {
+    font-size: 2em;
+  }
+
+  .presentation-text h2 {
+    font-size: 1.75em;
+  }
+}
+
+@media (max-width: 768px) {
+  .presentation-header {
+    flex-direction: column;
+    height: auto;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .presentation-title-section {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .presentation-controls {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .font-size-controls {
+    padding-left: 0;
+    border-left: none;
+    border-top: 1px solid #1f2937;
+    padding-top: 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .presentation-content {
+    padding: 1rem;
+  }
+
+  .presentation-content-inner {
+    padding: 1.5rem;
+  }
+
+  .presentation-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+  }
+}
