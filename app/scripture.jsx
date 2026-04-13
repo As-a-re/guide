@@ -1139,14 +1139,14 @@ const projectionStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem 1rem;
+    padding: 2rem 180px;
     overflow: hidden;
     min-height: 0;
   }
 
   .projection-verse-container {
     width: 100%;
-    max-width: 1600px;
+    max-width: 100%;
     text-align: center;
     display: flex;
     flex-direction: column;
@@ -1156,10 +1156,9 @@ const projectionStyles = `
 
   .projection-both-languages {
     display: flex;
-    gap: 3rem;
+    gap: 4rem;
     justify-content: center;
     width: 100%;
-    max-width: 1400px;
     align-items: center;
   }
 
@@ -1170,17 +1169,34 @@ const projectionStyles = `
     word-wrap: break-word;
   }
 
+  @media (max-width: 1400px) {
+    .projection-content {
+      padding: 2rem 120px;
+    }
+
+    .projection-both-languages {
+      gap: 3rem;
+    }
+  }
+
   @media (max-width: 1024px) {
+    .projection-content {
+      padding: 2rem 80px;
+    }
+
     .projection-both-languages {
       gap: 2rem;
     }
   }
 
   @media (max-width: 768px) {
+    .projection-content {
+      padding: 2rem 1.5rem;
+    }
+
     .projection-both-languages {
       flex-direction: column;
       gap: 2rem;
-      max-width: 100%;
     }
 
     .projection-language-column {
@@ -1191,13 +1207,13 @@ const projectionStyles = `
       font-size: 32px !important;
       line-height: 1.6;
     }
-
-    .projection-content {
-      padding: 1.5rem 1rem;
-    }
   }
 
   @media (max-width: 480px) {
+    .projection-content {
+      padding: 1.5rem 1rem;
+    }
+
     .projection-both-languages {
       gap: 1.5rem;
     }
@@ -1205,10 +1221,6 @@ const projectionStyles = `
     .projection-verse-text {
       font-size: 24px !important;
       line-height: 1.5;
-    }
-
-    .projection-content {
-      padding: 1rem 0.75rem;
     }
   }
 
