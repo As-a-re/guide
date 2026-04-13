@@ -10,10 +10,12 @@ const ScriptureProjection = () => {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [verses, setVerses] = useState([]);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
-  const [fontSize, setFontSize] = useState(48); // Larger default for projection
+  const [fontSize, setFontSize] = useState(40); // Larger default for projection
   const [isProjectionMode, setIsProjectionMode] = useState(false);
   const [showBothLanguages, setShowBothLanguages] = useState(false);
   const [projectionLanguage, setProjectionLanguage] = useState('nkjv'); // Track projection overlay language separately
+  const [showProjectionUI, setShowProjectionUI] = useState(true); // Auto-hide UI in projection mode
+  const hideTimeoutRef = React.useRef(null);
 
   // Derived state
   const currentBible = bibleData[activeBible];
@@ -178,14 +180,34 @@ const ScriptureProjection = () => {
     if (newProjectionMode) {
       setProjectionLanguage(activeBible);
       setShowBothLanguages(false);
+      setShowProjectionUI(true);
     }
   }, [isProjectionMode, activeBible]);
 
-  // Handle keyboard navigation
+  // Handle showing UI and setting auto-hide timer
+  const handleProjectionActivity = useCallback(() => {
+    setShowProjectionUI(true);
+    
+    // Clear existing timeout
+    if (hideTimeoutRef.current) {
+      clearTimeout(hideTimeoutRef.current);
+    }
+    
+    // Set new timeout to hide UI after 4 seconds of inactivity
+    hideTimeoutRef.current = setTimeout(() => {
+      setShowProjectionUI(false);
+    }, 4000);
+  }, []);
+
+  // Handle keyboard navigation and activity detection in projection mode
   useEffect(() => {
     if (isLoading) return;
     
     const handleKeyDown = (e) => {
+      if (isProjectionMode) {
+        handleProjectionActivity();
+      }
+      
       if (e.key === 'ArrowRight' && currentVerseIndex < verses.length - 1) {
         handleNextVerse();
       } else if (e.key === 'ArrowLeft' && currentVerseIndex > 0) {
@@ -195,9 +217,22 @@ const ScriptureProjection = () => {
       }
     };
 
+    const handleMouseMove = () => {
+      if (isProjectionMode) {
+        handleProjectionActivity();
+      }
+    };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentVerseIndex, verses.length, isProjectionMode, handleNextVerse, handlePreviousVerse, toggleProjectionMode, isLoading]);
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
+    };
+  }, [currentVerseIndex, verses.length, isProjectionMode, handleNextVerse, handlePreviousVerse, toggleProjectionMode, isLoading, handleProjectionActivity]);
 
   // Helper function to normalize book names (handles Roman numerals)
   const normalizeBookName = (name) => {
@@ -432,7 +467,7 @@ const ScriptureProjection = () => {
 
       {/* Projection Overlay - Similar to Hymns */}
       {isProjectionMode && currentVerse.text && (
-        <div className="projection-overlay">
+        <div className={`projection-overlay ${!showProjectionUI ? 'hide-ui' : ''}`}>
           <style>{projectionStyles}</style>
           
           {/* Header with Exit Button */}
@@ -441,10 +476,31 @@ const ScriptureProjection = () => {
               <Book size={24} />
               <span>{currentVerse.reference}</span>
             </div>
+            <div className="projection-language-toggle" style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', margin: 0, padding: 0, flex: 1 }}>
+              <button
+                className={`language-btn${projectionLanguage === 'nkjv' && !showBothLanguages ? ' active' : ''}`}
+                onClick={() => { setProjectionLanguage('nkjv'); setShowBothLanguages(false); }}
+              >
+                English (NKJV)
+              </button>
+              <button
+                className={`language-btn${projectionLanguage === 'twi' && !showBothLanguages ? ' active' : ''}`}
+                onClick={() => { setProjectionLanguage('twi'); setShowBothLanguages(false); }}
+              >
+                Twi Asem
+              </button>
+              <button
+                className={`language-btn${showBothLanguages ? ' active' : ''}`}
+                onClick={() => setShowBothLanguages(!showBothLanguages)}
+              >
+                Both
+              </button>
+            </div>
             <button 
               className="projection-exit"
               onClick={toggleProjectionMode}
               title="Exit Projection Mode"
+              style={{ minWidth: 'fit-content' }}
             >
               <Minimize size={20} />
               <span>Exit</span>
@@ -489,32 +545,7 @@ const ScriptureProjection = () => {
                   </div>
                 </div>
               )}
-              <div className="projection-verse-reference">
-                {currentVerse.reference}
-              </div>
             </div>
-          </div>
-
-          {/* Language Toggle Buttons - styled, bottom center */}
-          <div className="projection-language-toggle" style={{ display: 'flex', justifyContent: 'center', gap: '1rem', margin: '2rem 0' }}>
-            <button
-              className={`language-btn${projectionLanguage === 'nkjv' && !showBothLanguages ? ' active' : ''}`}
-              onClick={() => { setProjectionLanguage('nkjv'); setShowBothLanguages(false); }}
-            >
-              English (NKJV)
-            </button>
-            <button
-              className={`language-btn${projectionLanguage === 'twi' && !showBothLanguages ? ' active' : ''}`}
-              onClick={() => { setProjectionLanguage('twi'); setShowBothLanguages(false); }}
-            >
-              Twi Asem
-            </button>
-            <button
-              className={`language-btn${showBothLanguages ? ' active' : ''}`}
-              onClick={() => setShowBothLanguages(!showBothLanguages)}
-            >
-              Both
-            </button>
           </div>
 
           {/* Navigation Buttons */}
@@ -545,9 +576,6 @@ const ScriptureProjection = () => {
               <ChevronLeft size={16} />
               Previous Verse
             </button>
-            <div className="projection-verse-counter">
-              Verse {currentVerseIndex + 1} of {verses.length}
-            </div>
             <button 
               onClick={handleNextVerse}
               disabled={currentVerseIndex >= verses.length - 1}
@@ -1093,22 +1121,33 @@ const projectionStyles = `
   }
 
   .projection-header {
-    background: rgba(15, 23, 42, 0.95);
-    backdropFilter: blur(20px);
-    borderBottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem 2rem;
+    background: transparent;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0.4rem 2rem;
     display: flex;
-    justifyContent: flex-end;
-    alignItems: center;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+    z-index: 10;
+    position: relative;
+    gap: 1rem;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .projection-overlay.hide-ui .projection-header {
+    opacity: 0;
+    transform: translateY(-100%);
+    pointer-events: none;
   }
 
   .projection-title {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    font-size: 1.5rem;
+    gap: 0.75rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: #4caf50;
+    min-width: fit-content;
   }
 
   .projection-exit {
@@ -1125,7 +1164,8 @@ const projectionStyles = `
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 8px 25px rgba(239, 68, 68, 0.5);
-    margin-left: 70vw;
+    flex-shrink: 0;
+    margin: -2rem 2rem 0 0;
   }
 
   .projection-exit:hover {
@@ -1139,9 +1179,14 @@ const projectionStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem 180px;
-    overflow: hidden;
+    padding: 3rem 180px 160px 180px;
+    overflow-y: auto;
     min-height: 0;
+    transition: padding 0.3s ease;
+  }
+
+  .projection-overlay.hide-ui .projection-content {
+    padding: 0 180px;
   }
 
   .projection-verse-container {
@@ -1286,14 +1331,26 @@ const projectionStyles = `
   }
 
   .projection-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     background: rgba(15, 23, 42, 0.95);
-    backdropFilter: blur(20px);
-    borderTop: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 1.5rem 2rem;
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem 2rem;
     display: flex;
-    justifyContent: flex-start;
-    alignItems: center;
-    position: relative;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    z-index: 2001;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+
+  .projection-overlay.hide-ui .projection-footer {
+    opacity: 0;
+    transform: translateY(100%);
+    pointer-events: none;
   }
 
   .projection-footer-btn {
@@ -1321,36 +1378,25 @@ const projectionStyles = `
     cursor: not-allowed;
   }
 
-  .projection-footer-btn:first-child {
-    position: absolute;
-    left: 2rem;
-  }
-
   .projection-verse-counter {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 8px;
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.7);
-    margin-left: 45vw;
-  }
-
-  .projection-footer-btn:last-child {
-    margin-left: 70vw;
-    position: absolute;
-    right: 2rem;
+    flex: 1;
+    text-align: center;
   }
 
   .projection-language-toggle {
     display: flex;
     justify-content: center;
-    gap: 1rem;
-    margin: 2rem 0;
-    padding: 0 2rem;
+    gap: 0.75rem;
+    flex: 1;
   }
 
   .language-btn {
-    padding: 1rem 2rem;
+    padding: 0.5rem 1rem;
     border: 2px solid rgba(255, 255, 255, 0.3);
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.8);
@@ -1358,10 +1404,10 @@ const projectionStyles = `
     cursor: pointer;
     transition: all 0.3s ease;
     font-weight: 600;
-    font-size: 1rem;
-    backdrop-filter: blur(10px);
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-top: -1.5rem;
   }
 
   .language-btn:hover {
