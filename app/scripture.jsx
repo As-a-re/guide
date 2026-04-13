@@ -10,7 +10,7 @@ const ScriptureProjection = () => {
   const [selectedChapter, setSelectedChapter] = useState(null);
   const [verses, setVerses] = useState([]);
   const [currentVerseIndex, setCurrentVerseIndex] = useState(0);
-  const [fontSize, setFontSize] = useState(40); // Larger default for projection
+  const [fontSize, setFontSize] = useState(24); // Smaller default for projection
   const [isProjectionMode, setIsProjectionMode] = useState(false);
   const [showBothLanguages, setShowBothLanguages] = useState(false);
   const [projectionLanguage, setProjectionLanguage] = useState('nkjv'); // Track projection overlay language separately
@@ -1127,11 +1127,14 @@ const projectionStyles = `
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0;
     z-index: 10;
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     gap: 1rem;
     transition: opacity 0.3s ease, transform 0.3s ease;
+    height: auto;
   }
 
   .projection-overlay.hide-ui .projection-header {
@@ -1179,7 +1182,7 @@ const projectionStyles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3rem 180px 160px 180px;
+    padding: 80px 180px 160px 180px;
     overflow-y: auto;
     min-height: 0;
     transition: padding 0.3s ease;
