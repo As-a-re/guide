@@ -1140,17 +1140,18 @@ const projectionStyles = `
     align-items: center;
     justify-content: center;
     padding: 2rem 1rem;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
+    min-height: 0;
   }
 
   .projection-verse-container {
     width: 100%;
-    max-width: 100%;
+    max-width: 1600px;
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
   }
 
   .projection-both-languages {
@@ -1159,11 +1160,14 @@ const projectionStyles = `
     justify-content: center;
     width: 100%;
     max-width: 1400px;
+    align-items: center;
   }
 
   .projection-language-column {
     flex: 1;
     min-width: 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
   }
 
   @media (max-width: 1024px) {
@@ -1211,12 +1215,15 @@ const projectionStyles = `
   .projection-verse-text {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     font-size: 48px;
-    line-height: 1.7;
+    line-height: 1.8;
     color: white;
     font-weight: 300;
     text-shadow: 0 4px 12px rgba(0, 0, 0, 0.8);
     letter-spacing: 0.5px;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
   }
 
   .projection-verse-reference {
