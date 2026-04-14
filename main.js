@@ -1,11 +1,14 @@
 // main.js
-import { app, BrowserWindow, Menu, protocol, ipcMain } from "electron";
+import { app, BrowserWindow, Menu, protocol, ipcMain, screen } from "electron";
 import path, { join } from "path";
 import { fileURLToPath } from "url";
 import isDev from "electron-is-dev";
 import fs from "fs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Global reference to projection window
+let projectionWindow = null;
 
 /* ---------------------------------------------------------
    FIXED FILE PROTOCOL (No CORS issues)
@@ -83,6 +86,138 @@ function createMainWindow() {
 
   return win;
 }
+
+/* ---------------------------------------------------------
+   CREATE PROJECTION WINDOW (on extended/secondary display)
+--------------------------------------------------------- */
+function createProjectionWindow(data, type = 'announcement') {
+  // Close existing projection window if any
+  if (projectionWindow) {
+    projectionWindow.close();
+    projectionWindow = null;
+  }
+
+  // Get all displays
+  const displays = screen.getAllDisplays();
+  
+  console.log(`[Projection] Available displays: ${displays.length}`);
+  displays.forEach((display, index) => {
+    console.log(`[Projection] Display ${index}: ${display.bounds.width}x${display.bounds.height} at (${display.bounds.x}, ${display.bounds.y}) - Primary: ${display.primary}`);
+  });
+  
+  // Find secondary display (non-primary) or use primary if only one exists
+  let projectionDisplay = displays.find(d => !d.primary);
+  if (!projectionDisplay) {
+    projectionDisplay = displays[0]; // Fallback to primary if no secondary found
+    console.log('[Projection] No secondary display found, using primary display');
+  } else {
+    console.log('[Projection] Using secondary display');
+  }
+
+  const { x, y, width, height } = projectionDisplay.bounds;
+  console.log(`[Projection] Creating window at (${x}, ${y}) with size ${width}x${height}`);
+
+  projectionWindow = new BrowserWindow({
+    x: x,
+    y: y,
+    width: width,
+    height: height,
+    frame: false,
+    fullscreen: false,
+    show: false, // Don't show immediately, wait for content to load
+    webPreferences: {
+      preload: path.join(__dirname, "preload.cjs"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      devTools: false,
+    },
+  });
+
+  // Load projection content
+  const loadHandler = () => {
+    console.log(`[Projection] Sending ${type} data to projection window`);
+    projectionWindow.webContents.send('projection-data', data, type);
+    projectionWindow.show(); // Show after content is loaded
+  };
+
+  if (isDev) {
+    projectionWindow.loadURL("http://localhost:3000/#/projection");
+    projectionWindow.webContents.on('did-finish-load', loadHandler);
+  } else {
+    const indexPath = path.join(__dirname, "my-app", "build", "index.html");
+    if (fs.existsSync(indexPath)) {
+      projectionWindow.loadFile(indexPath);
+      projectionWindow.webContents.on('did-finish-load', () => {
+        // Navigate to projection route after page loads
+        projectionWindow.webContents.executeJavaScript(`window.location.hash = '#/projection'`);
+        // Send announcement data with a small delay to ensure route is loaded
+        setTimeout(() => {
+          loadHandler();
+        }, 500);
+      });
+    }
+  }
+
+  // Clean up reference when window is closed
+  projectionWindow.on('closed', () => {
+    console.log('[Projection] Projection window closed');
+    projectionWindow = null;
+  });
+
+  // Handle escape key in projection window to close it
+  projectionWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key.toLowerCase() === 'escape') {
+      event.preventDefault();
+      if (projectionWindow) {
+        projectionWindow.close();
+        projectionWindow = null;
+      }
+    }
+  });
+
+  return projectionWindow;
+}
+
+/* ---------------------------------------------------------
+   IPC HANDLERS FOR PROJECTION
+--------------------------------------------------------- */
+ipcMain.on('open-projection', (event, data, type = 'announcement') => {
+  console.log(`[IPC] Opening projection with type: ${type}`);
+  createProjectionWindow(data, type);
+});
+
+ipcMain.on('update-projection', (event, data) => {
+  if (projectionWindow && !projectionWindow.isDestroyed()) {
+    console.log('[IPC] Updating projection data');
+    projectionWindow.webContents.send('projection-data-update', data);
+  }
+});
+
+ipcMain.on('close-projection', () => {
+  console.log('[IPC] Closing projection window');
+  if (projectionWindow) {
+    projectionWindow.close();
+    projectionWindow = null;
+  }
+});
+
+ipcMain.handle('get-projection-displays', () => {
+  const displays = screen.getAllDisplays();
+  return displays.map(d => ({
+    id: d.id,
+    name: `Display ${d.id}`,
+    primary: d.primary,
+    bounds: d.bounds,
+    size: `${d.bounds.width}x${d.bounds.height}`
+  }));
+});
+
+ipcMain.handle('get-projection-status', () => {
+  return {
+    isActive: projectionWindow && !projectionWindow.isDestroyed(),
+    windowId: projectionWindow ? projectionWindow.id : null
+  };
+});
 
 /* ---------------------------------------------------------
    APP READY
