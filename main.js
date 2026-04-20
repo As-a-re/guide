@@ -140,8 +140,11 @@ function createProjectionWindow(data, type = 'announcement') {
     projectionWindow.show(); // Show after content is loaded
   };
 
+  // Determine route based on content type
+  const projectionRoute = type === 'scripture' ? '#/scripture-projection' : '#/projection';
+  
   if (isDev) {
-    projectionWindow.loadURL("http://localhost:3000/#/projection");
+    projectionWindow.loadURL(`http://localhost:3000/${projectionRoute}`);
     projectionWindow.webContents.on('did-finish-load', loadHandler);
   } else {
     const indexPath = path.join(__dirname, "my-app", "build", "index.html");
@@ -149,8 +152,8 @@ function createProjectionWindow(data, type = 'announcement') {
       projectionWindow.loadFile(indexPath);
       projectionWindow.webContents.on('did-finish-load', () => {
         // Navigate to projection route after page loads
-        projectionWindow.webContents.executeJavaScript(`window.location.hash = '#/projection'`);
-        // Send announcement data with a small delay to ensure route is loaded
+        projectionWindow.webContents.executeJavaScript(`window.location.hash = '${projectionRoute}'`);
+        // Send data with a small delay to ensure route is loaded
         setTimeout(() => {
           loadHandler();
         }, 500);
@@ -217,6 +220,25 @@ ipcMain.handle('get-projection-status', () => {
     isActive: projectionWindow && !projectionWindow.isDestroyed(),
     windowId: projectionWindow ? projectionWindow.id : null
   };
+});
+
+// Scripture-specific IPC handlers - forward to main window
+ipcMain.on('projection-navigate', (event, direction) => {
+  console.log(`[IPC] Scripture navigation: ${direction}`);
+  // Forward navigation command to main window
+  const mainWindow = BrowserWindow.getAllWindows().find(w => w !== projectionWindow);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('scripture-navigate', direction);
+  }
+});
+
+ipcMain.on('projection-language-change', (event, language) => {
+  console.log(`[IPC] Scripture language change: ${language}`);
+  // Forward language change command to main window
+  const mainWindow = BrowserWindow.getAllWindows().find(w => w !== projectionWindow);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('scripture-language-change', language);
+  }
 });
 
 /* ---------------------------------------------------------

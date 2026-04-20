@@ -21,4 +21,20 @@ contextBridge.exposeInMainWorld('api', {
   // Projection status
   getProjectionDisplays: () => ipcRenderer.invoke('get-projection-displays'),
   getProjectionStatus: () => ipcRenderer.invoke('get-projection-status'),
+  
+  // Generic send function for IPC messages
+  send: (channel, data) => {
+    const validChannels = ['projection-navigate', 'projection-language-change'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    }
+  },
+  
+  // Scripture navigation listeners (for main window to receive commands from projection window)
+  onScriptureNavigate: (callback) => ipcRenderer.on('scripture-navigate', (event, direction) => callback(direction)),
+  onScriptureLanguageChange: (callback) => ipcRenderer.on('scripture-language-change', (event, language) => callback(language)),
+  removeScriptureListeners: () => {
+    ipcRenderer.removeAllListeners('scripture-navigate');
+    ipcRenderer.removeAllListeners('scripture-language-change');
+  },
 });
