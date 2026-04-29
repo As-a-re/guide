@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Maximize, Minimize, Type, Book, Hash, Monitor } from "lucide-react";
 import { useProjection } from "./hooks/useProjection";
+import { getBackgroundStyle, getDesignById } from "./utils/backgroundDesigns";
 
 const ScriptureProjection = () => {
   // State hooks - must be called unconditionally at the top level
@@ -17,6 +18,7 @@ const ScriptureProjection = () => {
   const [projectionLanguage, setProjectionLanguage] = useState('nkjv'); // Track projection overlay language separately
   const [showProjectionUI, setShowProjectionUI] = useState(true); // Auto-hide UI in projection mode
   const [isExternalProjection, setIsExternalProjection] = useState(false); // Track external window projection
+  const [backgroundDesignId, setBackgroundDesignId] = useState('design-1'); // Background design for projection
   const hideTimeoutRef = React.useRef(null);
 
   // Projection hook
@@ -282,11 +284,16 @@ const ScriptureProjection = () => {
       englishVerse: getEnglishVerse(),
       twiVerse: getTwiVerse(),
       currentVerseIndex,
-      totalVerses: verses.length
+      totalVerses: verses.length,
+      backgroundDesignId,
+      backgroundMode: 'design',
+      reference: currentVerse.reference,
+      book: selectedBook,
+      chapter: selectedChapter
     };
 
     updateProjection(projectionData);
-  }, [isExternalProjection, currentVerse, showBothLanguages, projectionLanguage, fontSize, currentVerseIndex, verses.length]);
+  }, [isExternalProjection, currentVerse, showBothLanguages, projectionLanguage, fontSize, currentVerseIndex, verses.length, backgroundDesignId, selectedBook, selectedChapter]);
 
   // Helper function to normalize book names (handles Roman numerals)
   const normalizeBookName = (name) => {
@@ -542,7 +549,12 @@ const ScriptureProjection = () => {
                 englishVerse: getEnglishVerse(),
                 twiVerse: getTwiVerse(),
                 currentVerseIndex,
-                totalVerses: verses.length
+                totalVerses: verses.length,
+                backgroundDesignId,
+                backgroundMode: 'design',
+                reference: currentVerse.reference,
+                book: selectedBook,
+                chapter: selectedChapter
               };
               openProjection(projectionData, 'scripture');
               setIsExternalProjection(true);
