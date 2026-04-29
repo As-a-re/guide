@@ -3,6 +3,28 @@ import { ChevronLeft, ChevronRight, Maximize, Minimize, Type, Book, Hash, Monito
 import { useProjection } from "./hooks/useProjection";
 import { getBackgroundStyle, getDesignById } from "./utils/backgroundDesigns";
 
+// Helper to read template settings from localStorage
+const getTemplateSettings = () => {
+  try {
+    const templates = JSON.parse(localStorage.getItem('sg_sermonTemplates') || '[]');
+    // Use the first template's background settings, or defaults
+    const template = templates[0] || {};
+    return {
+      backgroundDesignId: template.backgroundDesignId || 'design-1',
+      backgroundMode: template.backgroundMode || 'design',
+      backgroundImage: template.backgroundImage || '',
+      backgroundColor: template.backgroundColor || '#ffffff',
+    };
+  } catch {
+    return {
+      backgroundDesignId: 'design-1',
+      backgroundMode: 'design',
+      backgroundImage: '',
+      backgroundColor: '#ffffff',
+    };
+  }
+};
+
 const ScriptureProjection = () => {
   // State hooks - must be called unconditionally at the top level
   const [bibleData, setBibleData] = useState({ nkjv: null, twi: null });
@@ -18,7 +40,7 @@ const ScriptureProjection = () => {
   const [projectionLanguage, setProjectionLanguage] = useState('nkjv'); // Track projection overlay language separately
   const [showProjectionUI, setShowProjectionUI] = useState(true); // Auto-hide UI in projection mode
   const [isExternalProjection, setIsExternalProjection] = useState(false); // Track external window projection
-  const [backgroundDesignId, setBackgroundDesignId] = useState('design-1'); // Background design for projection
+  const [templateSettings, setTemplateSettings] = useState(getTemplateSettings); // Background settings from Settings page
   const hideTimeoutRef = React.useRef(null);
 
   // Projection hook
@@ -285,15 +307,17 @@ const ScriptureProjection = () => {
       twiVerse: getTwiVerse(),
       currentVerseIndex,
       totalVerses: verses.length,
-      backgroundDesignId,
-      backgroundMode: 'design',
+      backgroundDesignId: templateSettings.backgroundDesignId,
+      backgroundMode: templateSettings.backgroundMode,
+      backgroundImage: templateSettings.backgroundImage,
+      backgroundColor: templateSettings.backgroundColor,
       reference: currentVerse.reference,
       book: selectedBook,
       chapter: selectedChapter
     };
 
     updateProjection(projectionData);
-  }, [isExternalProjection, currentVerse, showBothLanguages, projectionLanguage, fontSize, currentVerseIndex, verses.length, backgroundDesignId, selectedBook, selectedChapter]);
+  }, [isExternalProjection, currentVerse, showBothLanguages, projectionLanguage, fontSize, currentVerseIndex, verses.length, templateSettings, selectedBook, selectedChapter]);
 
   // Helper function to normalize book names (handles Roman numerals)
   const normalizeBookName = (name) => {
@@ -540,6 +564,10 @@ const ScriptureProjection = () => {
               return;
             }
             if (currentVerse.text) {
+              // Re-read template settings in case they were updated in Settings
+              const currentTemplateSettings = getTemplateSettings();
+              setTemplateSettings(currentTemplateSettings);
+              
               // Open external projection window with scripture data
               const projectionData = {
                 currentVerse,
@@ -550,8 +578,10 @@ const ScriptureProjection = () => {
                 twiVerse: getTwiVerse(),
                 currentVerseIndex,
                 totalVerses: verses.length,
-                backgroundDesignId,
-                backgroundMode: 'design',
+                backgroundDesignId: currentTemplateSettings.backgroundDesignId,
+                backgroundMode: currentTemplateSettings.backgroundMode,
+                backgroundImage: currentTemplateSettings.backgroundImage,
+                backgroundColor: currentTemplateSettings.backgroundColor,
                 reference: currentVerse.reference,
                 book: selectedBook,
                 chapter: selectedChapter
@@ -570,8 +600,19 @@ const ScriptureProjection = () => {
       </div>
 
       {/* Projection Overlay - Similar to Hymns */}
-      {isProjectionMode && currentVerse.text && (
-        <div className={`projection-overlay ${!showProjectionUI ? 'hide-ui' : ''}`}>
+      {isProjectionMode && currentVerse.text && (() => {
+        // Get the template background style for the overlay
+        const overlayBackgroundStyle = templateSettings.backgroundMode === 'design'
+          ? getBackgroundStyle(getDesignById(templateSettings.backgroundDesignId) || {})
+          : {
+              backgroundColor: templateSettings.backgroundColor || '#ffffff',
+              backgroundImage: templateSettings.backgroundImage ? `url(${templateSettings.backgroundImage})` : 'none',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            };
+        
+        return (
+        <div className={`projection-overlay ${!showProjectionUI ? 'hide-ui' : ''}`} style={overlayBackgroundStyle}>
           <style>{projectionStyles}</style>
           
           {/* Header with Exit Button */}
@@ -690,7 +731,8 @@ const ScriptureProjection = () => {
             </button>
           </div>
         </div>
-      )}
+        );
+      })()}
     </>
   );
 };
